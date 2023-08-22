@@ -33,8 +33,9 @@ srun python -u ../train.py \
 	--batch_size_per_gpu 512 \
 	--num_workers 16 \
 	--lr 0.0001 \
-	--min_lr 0.0001 \
 	--weight_decay 0.0 \
+	--dim 2048 \
+	--pred_dim 512 \
 	--output_dir ../outputs \
 	--data_path "/scratch/work/public/ml-datasets/laion2B-en-data/${DATA}.tar" \
 	--save_prefix "${SAVE}"

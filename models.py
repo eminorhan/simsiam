@@ -18,7 +18,6 @@ class SimSiam(nn.Module):
         """
         super(SimSiam, self).__init__()
 
-        self.base_encoder = base_encoder
         self.enc_dim = enc_dim
         self.pred_dim = pred_dim
 
@@ -33,7 +32,7 @@ class SimSiam(nn.Module):
                         nn.Linear(base_encoder.embed_dim, self.enc_dim, bias=False),
                         nn.BatchNorm1d(self.enc_dim, affine=False)
                     )
-        self.encoder = nn.Sequential(self.base_encoder, projector)
+        self.encoder = nn.Sequential(base_encoder, projector)
 
         # build a 2-layer predictor
         self.predictor = nn.Sequential(
@@ -110,5 +109,5 @@ class VisionMLP(nn.Module):
 
 
 def vimlp_huge(**kwargs):
-    model = VisionMLP(input_size=224*224*3, depth=16, hidden_features=9008, **kwargs)
+    model = VisionMLP(input_size=224*224*3, depth=24, hidden_features=15000, **kwargs)
     return model

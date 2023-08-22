@@ -25,6 +25,8 @@ GLOBAL_ITER = 0
 
 def get_args_parser():
     parser = argparse.ArgumentParser('SimSiam pre-training', add_help=False)
+
+    # Optimization
     parser.add_argument('--batch_size_per_gpu', default=256, type=int, help='Batch size per GPU (effective batch size is batch_size_per_gpu * accum_iter * # gpus')
     parser.add_argument('--epochs', default=999, type=int)
     parser.add_argument('--accum_iter', default=1, type=int, help='Accumulate gradient iterations (for increasing the effective batch size under memory constraints)')
@@ -32,6 +34,12 @@ def get_args_parser():
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument('--weight_decay', type=float, default=0.05, help='weight decay (default: 0.05)')
     parser.add_argument('--lr', type=float, default=None, help='learning rate (absolute lr)')
+
+    # Model
+    parser.add_argument('--dim', default=2048, type=int, help='final projection layer dimensionality')
+    parser.add_argument('--pred_dim', default=512, type=int, help='predictor dimensionality')
+
+    # IO, etc.
     parser.add_argument('--data_path', default='/scratch/eo41/data/saycam/SAY_5fps_300s_{000000..000009}.tar', type=str, help='dataset path')
     parser.add_argument('--output_dir', default='./output_dir', help='path where to save, empty for no saving')
     parser.add_argument('--device', default='cuda', help='device to use for training/testing')
@@ -75,7 +83,8 @@ def main(args):
     data_loader = wds.WebLoader(dataset, shuffle=False, batch_size=args.batch_size_per_gpu, num_workers=args.num_workers)
     
     # define the model
-    model = SimSiam(vimlp_huge, args.dim, args.pred_dim)
+    base_encoder = vimlp_huge()
+    model = SimSiam(base_encoder, args.dim, args.pred_dim)
     model.to(device)
 
     # effective batch size
