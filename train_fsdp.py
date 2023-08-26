@@ -47,7 +47,7 @@ def get_args_parser():
     parser.add_argument('--device', default='cuda', help='device to use for training/testing')
     parser.add_argument('--saveckp_freq', default=10000, type=int, help='Save checkpoint every x iterations.')
     parser.add_argument('--start_epoch', default=0, type=int, help='start epoch')
-    parser.add_argument('--num_workers', default=16, type=int)
+    parser.add_argument('--num_workers', default=20, type=int)
     parser.add_argument('--pin_mem', action='store_true', help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
     parser.add_argument('--no_pin_mem', action='store_false', dest='pin_mem')
     parser.set_defaults(pin_mem=True)
@@ -98,10 +98,6 @@ def main(args):
     
     # define loss function (criterion) and optimizer
     criterion = torch.nn.CosineSimilarity(dim=1).cuda(args.gpu)
-
-    n_parameters = sum(p.numel() for p in model_without_ddp.parameters() if p.requires_grad)
-    print("Model = %s" % str(model_without_ddp))
-    print('number of params (M): %.2f' % (n_parameters / 1.e6))
 
     # following timm: set wd as 0 for bias and norm layers
     param_groups = optim_factory.add_weight_decay(model_without_ddp, args.weight_decay)
