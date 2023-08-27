@@ -31,7 +31,7 @@ echo $SAVE
 srun python -u ../train_fsdp.py \
 	--resume "" \
 	--batch_size_per_gpu 512 \
-	--num_workers 64 \
+	--num_workers 32 \
 	--lr 0.0001 \
 	--weight_decay 0.0 \
 	--dim 2048 \

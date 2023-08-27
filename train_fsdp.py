@@ -1,9 +1,7 @@
 import os
 import sys
 import math
-import time
 import argparse
-import datetime
 import json
 from pathlib import Path
 from typing import Iterable
@@ -108,13 +106,8 @@ def main(args):
     optimizer.lr = args.lr  # override loaded lr
     
     print("Starting SimSiam training!")
-    start_time = time.time()
     for _ in range(args.start_epoch, args.epochs):
         train_stats = train_one_epoch(model, data_loader, optimizer, criterion, device, loss_scaler, args=args)
-
-    total_time = time.time() - start_time
-    total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-    print('Training time {}'.format(total_time_str))
 
 
 def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module, device: torch.device, loss_scaler, args=None):
