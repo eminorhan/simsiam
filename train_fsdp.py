@@ -19,9 +19,7 @@ import misc
 from models import TwoCropsTransform, SimSiam, vimlp_huge
 from misc import NativeScalerWithGradNormCount as NativeScaler
 
-
 GLOBAL_ITER = 0
-
 
 def get_args_parser():
     parser = argparse.ArgumentParser('SimSiam pre-training', add_help=False)
@@ -40,7 +38,7 @@ def get_args_parser():
     parser.add_argument('--pred_dim', default=512, type=int, help='predictor dimensionality')
 
     # IO, etc.
-    parser.add_argument('--data_path', default='/scratch/eo41/data/saycam/SAY_5fps_300s_{000000..000009}.tar', type=str, help='dataset path')
+    parser.add_argument('--data_path', default='/scratch/work/public/ml-datasets/laion2B-en-data/{00000..99999}.tar', type=str, help='dataset path')
     parser.add_argument('--output_dir', default='./output_dir', help='path where to save, empty for no saving')
     parser.add_argument('--device', default='cuda', help='device to use for training/testing')
     parser.add_argument('--saveckp_freq', default=10000, type=int, help='Save checkpoint every x iterations.')
@@ -53,10 +51,8 @@ def get_args_parser():
 
     return parser
 
-
 def preprocess(sample):
     return sample[0]
-
 
 def main(args):
     misc.init_distributed_mode(args)
@@ -81,15 +77,14 @@ def main(args):
     # use webdataset for loading data
     dataset = (wds.WebDataset(args.data_path, resampled=True).shuffle(10000, initial=10000).decode("pil").to_tuple("jpg").map(preprocess).map(transform))
     data_loader = wds.WebLoader(dataset, shuffle=False, batch_size=args.batch_size_per_gpu, num_workers=args.num_workers)
-    
+    print(f"Effective batch size: {args.batch_size_per_gpu * args.accum_iter * misc.get_world_size()}")
+
     # define the model
     base_encoder = vimlp_huge()
     model = SimSiam(base_encoder, args.dim, args.pred_dim)
     model.to(device)
-
-    # effective batch size
-    eff_batch_size = args.batch_size_per_gpu * args.accum_iter * misc.get_world_size()
-    print("effective batch size: %d" % eff_batch_size)
+    print('Model:', model)
+    print(f"Number of trainable params (M): {(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1.e6)}" )
 
     model = FullyShardedDataParallel(model, fsdp_auto_wrap_policy=default_auto_wrap_policy)
     model_without_ddp = model.module
@@ -108,7 +103,6 @@ def main(args):
     print("Starting SimSiam training!")
     for _ in range(args.start_epoch, args.epochs):
         train_stats = train_one_epoch(model, data_loader, optimizer, criterion, device, loss_scaler, args=args)
-
 
 def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module, device: torch.device, loss_scaler, args=None):
     
@@ -147,6 +141,9 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
 
         lr = optimizer.param_groups[0]["lr"]
         metric_logger.update(lr=lr)
+
+        if GLOBAL_ITER % 1000 == 0:
+            print(GLOBAL_ITER)
 
         if GLOBAL_ITER % args.saveckp_freq == 0:
             # ============ writing logs + saving checkpoint ============
