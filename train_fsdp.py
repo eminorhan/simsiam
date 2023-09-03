@@ -19,7 +19,9 @@ import misc
 from models import TwoCropsTransform, SimSiam, vimlp_huge
 from misc import NativeScalerWithGradNormCount as NativeScaler
 
+
 GLOBAL_ITER = 0
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('SimSiam pre-training', add_help=False)
@@ -41,7 +43,7 @@ def get_args_parser():
     parser.add_argument('--data_path', default='/scratch/work/public/ml-datasets/laion2B-en-data/{00000..99999}.tar', type=str, help='dataset path')
     parser.add_argument('--output_dir', default='./output_dir', help='path where to save, empty for no saving')
     parser.add_argument('--device', default='cuda', help='device to use for training/testing')
-    parser.add_argument('--saveckp_freq', default=10000, type=int, help='Save checkpoint every x iterations.')
+    parser.add_argument('--saveckp_freq', default=1000, type=int, help='Save checkpoint every x iterations.')
     parser.add_argument('--start_epoch', default=0, type=int, help='start epoch')
     parser.add_argument('--num_workers', default=20, type=int)
     parser.add_argument('--pin_mem', action='store_true', help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
@@ -51,8 +53,10 @@ def get_args_parser():
 
     return parser
 
+
 def preprocess(sample):
     return sample[0]
+
 
 def main(args):
     misc.init_distributed_mode(args)
@@ -104,6 +108,7 @@ def main(args):
     for _ in range(args.start_epoch, args.epochs):
         train_stats = train_one_epoch(model, data_loader, optimizer, criterion, device, loss_scaler, args=args)
 
+
 def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module, device: torch.device, loss_scaler, args=None):
     
     global GLOBAL_ITER
@@ -141,9 +146,6 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
 
         lr = optimizer.param_groups[0]["lr"]
         metric_logger.update(lr=lr)
-
-        if GLOBAL_ITER % 1000 == 0:
-            print(GLOBAL_ITER)
 
         if GLOBAL_ITER % args.saveckp_freq == 0:
             # ============ writing logs + saving checkpoint ============

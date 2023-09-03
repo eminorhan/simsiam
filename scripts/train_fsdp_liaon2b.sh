@@ -5,7 +5,7 @@
 #SBATCH --gres=gpu:a100:4
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=480GB
-#SBATCH --time=2:00:00
+#SBATCH --time=48:00:00
 #SBATCH --job-name=train_simsiam_fsdp_liaon2b
 #SBATCH --output=train_simsiam_fsdp_liaon2b_%A_%a.out
 #SBATCH --array=0

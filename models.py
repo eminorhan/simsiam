@@ -51,7 +51,6 @@ class SimSiam(nn.Module):
             p1, p2, z1, z2: predictors and targets of the network
             See Sec. 3 of https://arxiv.org/abs/2011.10566 for detailed notations
         """
-
         # compute features for one view
         z1 = self.encoder(x1) # NxC
         z2 = self.encoder(x2) # NxC
@@ -63,8 +62,9 @@ class SimSiam(nn.Module):
 
 
 class TwoCropsTransform:
-    """Take two random crops of one image as the query and key."""
-
+    """
+    Take two random crops of one image as the query and key.
+    """
     def __init__(self, base_transform):
         self.base_transform = base_transform
 
@@ -91,7 +91,9 @@ class Block(nn.Module):
         
 
 class VisionMLP(nn.Module):
-    """ Vision MLP """
+    """ 
+    Build a vision MLP model.
+    """
     def __init__(self, input_size, depth, hidden_features, drop=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, residual=True):
         super().__init__()
         self.flatten = nn.Flatten()
@@ -109,5 +111,5 @@ class VisionMLP(nn.Module):
 
 
 def vimlp_huge(**kwargs):
-    model = VisionMLP(input_size=224*224*3, depth=16, hidden_features=13075, **kwargs)
+    model = VisionMLP(input_size=224*224*3, depth=16, hidden_features=13080, **kwargs)
     return model
